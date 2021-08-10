@@ -43,8 +43,6 @@ namespace UDPShield
                 {
                     Pipe[] pipes;
 
-                    Console.Title = $"{Connections.Count}";
-
                     lock (locker)
                         pipes = Connections.Values.ToArray();
 
@@ -128,6 +126,12 @@ namespace UDPShield
             {
                 p.lastServerTransmition = DateTimeOffset.Now;
                 p.ClientSender.Enqueue(buf, len, p.ep);
+
+                lock (DataLogger.locker)
+                {
+                    DataLogger.OutBound += (UInt64)len;
+                    DataLogger.OutPackets++;
+                }
             }
 
             pool.Return(buf);
