@@ -20,7 +20,7 @@ namespace UDPShield
 
         static AsyncSender MainSender = new AsyncSender(MainSocket);
 
-        static long Guid = new Random().NextInt64();
+        static long Guid = (long)((ulong)new Random().Next() | (ulong)((ulong)new Random().Next() << 32));
 
         static string Motd = $"MCPE;§f    UDPShield;0;;0;42;{Guid};;";
 
