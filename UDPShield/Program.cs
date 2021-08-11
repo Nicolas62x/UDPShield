@@ -49,7 +49,7 @@ namespace UDPShield
 
         static void Main(string[] args)
         {
-            args = new string[] { "19132", "136.243.59.145:19132" };
+            //args = new string[] { "19132", "136.243.59.145:19132" };
 
             try
             {
