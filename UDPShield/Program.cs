@@ -26,7 +26,7 @@ namespace UDPShield
 
         static Thread t = new Thread(MotdUpdater);
 
-        static IPEndPoint server;
+        public static IPEndPoint server;
 
 
         static void MotdUpdater()
@@ -49,7 +49,7 @@ namespace UDPShield
 
         static void Main(string[] args)
         {
-            //args = new string[] { "19132", "136.243.59.145:19132" };
+            args = new string[] { "19132", "136.243.59.145:19132" };
 
             try
             {
@@ -81,6 +81,8 @@ namespace UDPShield
 
             MainSocket.Bind(Any);
             StartListening();
+
+            IpInterface.Init();
             
             t.Start();
 

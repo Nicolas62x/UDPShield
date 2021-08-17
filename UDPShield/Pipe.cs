@@ -14,7 +14,7 @@ namespace UDPShield
     {
         EndPoint ep;
         EndPoint Server;
-        Socket s;
+        public Socket s;
         AsyncSender ServerSender;
         AsyncSender ClientSender;
         DateTimeOffset lastServerTransmition = DateTimeOffset.Now;
@@ -22,6 +22,9 @@ namespace UDPShield
         static ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 
         public static Dictionary<EndPoint, Pipe> Connections = new Dictionary<EndPoint, Pipe>();
+
+        static Dictionary<ushort, EndPoint> PortToIp = new Dictionary<ushort, EndPoint>();
+
         public static object locker = new object();
 
         static Thread t = new Thread(PipeTimeOuter);
@@ -51,8 +54,15 @@ namespace UDPShield
                         if ((DateTimeOffset.Now - pipes[i].lastServerTransmition).TotalSeconds > 30)
                         {
                             pipes[i].Dispose();
+
+                            ushort port = (ushort)((IPEndPoint)pipes[i].s.LocalEndPoint).Port;
+
                             lock (locker)
+                            {
+                                PortToIp.Remove(port);
                                 Connections.Remove(pipes[i].ep);
+                            }
+                                
                         }
                             
                     }
@@ -62,7 +72,7 @@ namespace UDPShield
                 }
             }
         }
-
+        //must be called in locked context (locker)
         public Pipe(EndPoint User, EndPoint server, Socket serverSocket)
         {
             this.ep = User;
@@ -70,6 +80,8 @@ namespace UDPShield
 
             s = new Socket(SocketType.Dgram, ProtocolType.Udp);
             s.Bind(new IPEndPoint(IPAddress.IPv6Any, 0));
+
+            PortToIp.Add((ushort)((IPEndPoint)s.LocalEndPoint).Port,User);
 
             ServerSender = new AsyncSender(s);
             ClientSender = new AsyncSender(serverSocket);
@@ -159,6 +171,14 @@ namespace UDPShield
         public void SendData(byte[] data, int len)
         {
             ServerSender.Enqueue(data, len, Server);
+        }
+
+        public static IPEndPoint GetIpWithPort(ushort port)
+        {
+            lock (locker)
+                if (PortToIp.TryGetValue(port, out EndPoint ep))
+                    return (IPEndPoint)ep;
+            return null;
         }
 
     }
