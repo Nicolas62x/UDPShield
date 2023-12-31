@@ -1,42 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace UDPShield
+namespace UDPShield;
+class MovingAvg
 {
-    class MovingAvg
+    UInt64 Last = 0;
+
+    double[] data = new double[40];
+    byte idx = 0;
+    byte count = 0;
+
+    public void Push(UInt64 value, double dt)
     {
-        UInt64 Last = 0;
+        UInt64 delta = value - Last;
 
-        double[] data = new double[40];
-        byte idx = 0;
-        byte count = 0;
+        data[idx++] = delta / dt;
 
-        public void Push(UInt64 value, double dt)
-        {
-            UInt64 delta = value - Last;
+        if (count < data.Length)
+            count++;
 
-            data[idx++] = delta / dt;
+        if (idx >= data.Length)
+            idx = 0;
 
-            if (count < data.Length)
-                count++;
+        Last = value;
+    }
 
-            if (idx >= data.Length)
-                idx = 0;
+    public double GetAvg()
+    {
+        double avg = 0;
 
-            Last = value;
-        }
+        for (int i = 0; i < data.Length; i++)
+            avg += data[i] / count;
 
-        public double GetAvg()
-        {
-            double avg = 0;
-
-            for (int i = 0; i < data.Length; i++)
-                avg += data[i] / count;
-
-            return avg;
-        }
+        return avg;
     }
 }
